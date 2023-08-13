@@ -245,140 +245,78 @@ window.addEventListener("DOMContentLoaded", () => {
         ".menu .container"
     ).render();
 
-    //Реализация отправки данных на сервер(не работает!!). Нужен локальный сервер!!!
-    const forms = document.querySelectorAll(".form");
-
-    //Объект, в котором есть статусы обработки запроса к серверу
+    const forms = document.querySelectorAll("form");
     const message = {
         loading: "img/form/spinner.svg",
-        success: "Спасибо, скоро мы с вами свяжемся",
+        success: "Спасибо! Скоро мы с вами свяжемся",
         failure: "Что-то пошло не так...",
     };
 
-    //Подвязываем нашу функцию на каждую форму
-    forms.forEach((form) => {
-        postData(form);
+    forms.forEach((item) => {
+        postData(item);
     });
 
     function postData(form) {
         form.addEventListener("submit", (e) => {
-            //Убираем стандартное поведение
             e.preventDefault();
 
-            //Создание интерактивного элемента
-            const statusMessage = document.createElement("img");
-
-            //Добавляем в src нашу иконку загрузки
+            let statusMessage = document.createElement("img");
             statusMessage.src = message.loading;
-
-            //Записываем в начале в наш div статут loading
             statusMessage.style.cssText = `
-            display: block;
-            margin: 0 auto;
+                display: block;
+                margin: 0 auto;
             `;
-
-            //Помещаем ее ниже нашей формы
             form.insertAdjacentElement("afterend", statusMessage);
 
-            //Создание запроса
             const request = new XMLHttpRequest();
-
-            //Настраиваем запрос
             request.open("POST", "server.php");
-
-            /*Заголовок в FormDate - устанавливать не нужно!!
-            request.setRequestHeader("Content-type", "multipart/form-data");
-            */
-
-            //Разбор в формате JSON
-            request.setRequestHeader("Content-type", "application/json");
-
-            //Работа с FormData(input === name -> в верстке!)
+            request.setRequestHeader(
+                "Content-type",
+                "application/json; charset=utf-8"
+            );
             const formData = new FormData(form);
 
-            //Создаем пустой объект, в который будут записываться наши введенные данные
-            const obj = {};
-
-            //Проходим через наш formData и записываем value и key в объект obj
-            formData.forEach((value, key) => {
-                obj[key] = value;
+            const object = {};
+            formData.forEach(function (value, key) {
+                object[key] = value;
             });
+            const json = JSON.stringify(object);
 
-            //Переделываем наш объект в формат JSON
-            const json = JSON.stringify(obj);
-
-            //Отправляем данные на сервер(он уже имеент body, т.к. POST-запрос)
             request.send(json);
 
-            //Обработчик события на наш запрос
             request.addEventListener("load", () => {
-                //Если статус нашего запроса будет 200 - успешно
                 if (request.status === 200) {
-                    console.log(request.response); // ответ в консоле
-
-                    //Ответ о том, что все получилось
+                    console.log(request.response);
                     showThanksModal(message.success);
-
-                    //Сброс формы
-                    form.reset();
-
-                    //Удаление блока через опр. кол-во времени
                     statusMessage.remove();
+                    form.reset();
                 } else {
-                    //Ответ о том, что у нас что-то не получилось
                     showThanksModal(message.failure);
                 }
             });
         });
     }
 
-    //Создание интерактива в нашу форму
     function showThanksModal(message) {
-        //Получение модального окна, его содержимого
         const prevModalDialog = document.querySelector(".modal__dialog");
 
-        //Добавляем ему класс hide
         prevModalDialog.classList.add("hide");
-
-        //Открытие модального окна
         openModal();
 
-        //Создание div-элемента, который будет показываться после отправки данных на сервер
         const thanksModal = document.createElement("div");
-
-        //Добавляем ему класс "modal__dialog"
         thanksModal.classList.add("modal__dialog");
-
-        //Добавляем разметку на наш новый div с ответом
         thanksModal.innerHTML = `
-        <div class = "modal__content">
-            <div class = "modal__close" data-close>×</div>
-            <div class = "modal__title">${message}</div>
-        </div>  
+            <div class="modal__content">
+                <div class="modal__close" data-close>×</div>
+                <div class="modal__title">${message}</div>
+            </div>
         `;
-
-        //Получаем наше модальное окно и помещаем наш новый элемент ниже модального окна
         document.querySelector(".modal").append(thanksModal);
-
-        //Прописываем асинхронную операцию для обновления данных в нашей форме
         setTimeout(() => {
-            //Удаление нашего элемента
             thanksModal.remove();
-
-            //Добавление на наше модальное окно класс show
             prevModalDialog.classList.add("show");
-
-            //Удаление с нашего модального окна класс hide
             prevModalDialog.classList.remove("hide");
-
-            //Запуск функции closeModalWindow()
-            closeModalWindow();
+            closeModal();
         }, 4000);
     }
-
-    //Работа с Fetch API
-    fetch("https://jsonplaceholder.typicode.com/todos/1")
-        .then((response) => response.json())
-        .then((json) => console.log(json));
-
 });
