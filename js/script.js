@@ -1,9 +1,6 @@
 "use strict";
 /*Пробема которые есть на момент 13.08
     1.Не работает выход из формы через крестик
-    2.Не отслеживается отправка на back-end данные
-    3.Не отслеживается верстка ответа от back-end пользователю
-    4.Не отслеживается spinner в момент обработки и отправки данных на сервер
 */
 
 //Глобальный обработчик событий
@@ -166,7 +163,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     //Появление модального окна через определенное время
-    // const modalTimerId = setTimeout(openModal, 6000);
+    const modalTimerId = setTimeout(openModal, 600000);
 
     function showModalByScroll() {
         if (
@@ -245,6 +242,7 @@ window.addEventListener("DOMContentLoaded", () => {
         ".menu .container"
     ).render();
 
+    //Form
     const forms = document.querySelectorAll("form");
     const message = {
         loading: "img/form/spinner.svg",
@@ -268,55 +266,77 @@ window.addEventListener("DOMContentLoaded", () => {
             `;
             form.insertAdjacentElement("afterend", statusMessage);
 
-            const request = new XMLHttpRequest();
-            request.open("POST", "server.php");
-            request.setRequestHeader(
-                "Content-type",
-                "application/json; charset=utf-8"
-            );
+            //Работа с FormData(input === name -> в верстке!)
             const formData = new FormData(form);
 
-            const object = {};
-            formData.forEach(function (value, key) {
-                object[key] = value;
+            const obj = {};
+            formData.forEach((value, key) => {
+                obj[key] = value;
             });
-            const json = JSON.stringify(object);
 
-            request.send(json);
-
-            request.addEventListener("load", () => {
-                if (request.status === 200) {
-                    console.log(request.response);
+            fetch("server1.php", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                body: JSON.stringify(obj),
+            })
+                .then((data) => data.text())
+                .then((data) => {
+                    console.log(data); // ответ в консоле
                     showThanksModal(message.success);
                     statusMessage.remove();
-                    form.reset();
-                } else {
+                })
+                .catch(() => {
                     showThanksModal(message.failure);
-                }
-            });
+                })
+                .finally(() => {
+                    form.reset();
+                });
         });
     }
 
+    //Создание интерактива в нашу форму
     function showThanksModal(message) {
+        //Получение модального окна, его содержимого
         const prevModalDialog = document.querySelector(".modal__dialog");
 
+        //Добавляем ему класс hide
         prevModalDialog.classList.add("hide");
+
+        //Открытие модального окна
         openModal();
 
+        //Создание div-элемента, который будет показываться после отправки данных на сервер
         const thanksModal = document.createElement("div");
+
+        //Добавляем ему класс "modal__dialog"
         thanksModal.classList.add("modal__dialog");
+
+        //Добавляем разметку на наш новый div с ответом
         thanksModal.innerHTML = `
-            <div class="modal__content">
-                <div class="modal__close" data-close>×</div>
-                <div class="modal__title">${message}</div>
-            </div>
+        <div class="modal__content">
+            <div class="modal__close" data-close>×</div>
+            <div class="modal__title">${message}</div>
+        </div>  
         `;
+
+        //Получаем наше модальное окно и помещаем наш новый элемент ниже модального окна
         document.querySelector(".modal").append(thanksModal);
+
+        //Прописываем асинхронную операцию для обновления данных в нашей форме
         setTimeout(() => {
+            //Удаление нашего элемента
             thanksModal.remove();
+
+            //Добавление на наше модальное окно класс show
             prevModalDialog.classList.add("show");
+
+            //Удаление с нашего модального окна класс hide
             prevModalDialog.classList.remove("hide");
-            closeModal();
+
+            //Запуск функции closeModalWindow()
+            closeModalWindow();
         }, 4000);
     }
 });
