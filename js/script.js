@@ -215,7 +215,7 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    //Получение данных из DB
+    //Функция, на получение данных из БД
     const getResource = async (url) => {
         const res = await fetch(url);
 
@@ -227,8 +227,23 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     //Получение всех данных с базы данных
+    /*
     getResource("http://localhost:3000/menu").then((data) => {
         data.forEach(({ img, altimg, title, descr, price }) => {
+            new MenuCard(
+                img,
+                altimg,
+                title,
+                descr,
+                price,
+                ".menu .container"
+            ).render();
+        });
+    }); */
+
+    //Библиотека Axios
+    axios.get("http://localhost:3000/menu").then((data) => {
+        data.data.forEach(({ img, altimg, title, descr, price }) => {
             new MenuCard(
                 img,
                 altimg,
