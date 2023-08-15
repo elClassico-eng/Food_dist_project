@@ -215,32 +215,30 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    new MenuCard(
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        'Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!',
-        9,
-        ".menu .container"
-    ).render();
+    //Получение данных из DB
+    const getResource = async (url) => {
+        const res = await fetch(url);
 
-    new MenuCard(
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        "Меню “Постное” - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.",
-        14,
-        ".menu .container"
-    ).render();
+        if (!res.ok) {
+            throw new Error(`Could not fatch ${url}, status ${res.status}`);
+        }
 
-    new MenuCard(
-        "img/tabs/elite.jpg",
-        "elite",
-        "Меню “Премиум”",
-        "В меню “Премиум” мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!",
-        21,
-        ".menu .container"
-    ).render();
+        return await res.json();
+    };
+
+    //Получение всех данных с базы данных
+    getResource("http://localhost:3000/menu").then((data) => {
+        data.forEach(({ img, altimg, title, descr, price }) => {
+            new MenuCard(
+                img,
+                altimg,
+                title,
+                descr,
+                price,
+                ".menu .container"
+            ).render();
+        });
+    });
 
     //Form
     const forms = document.querySelectorAll("form");
@@ -251,13 +249,26 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     forms.forEach((item) => {
-        postData(item);
+        bindPostData(item);
     });
 
-    function postData(form) {
+    //Добавление данных  с формы в DB
+    const postData = async (url, data) => {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json",
+            },
+            body: data,
+        });
+
+        return await res.json();
+    };
+
+    //Bind нашу BD в форму на странице
+    function bindPostData(form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
-
             let statusMessage = document.createElement("img");
             statusMessage.src = message.loading;
             statusMessage.style.cssText = `
@@ -269,19 +280,9 @@ window.addEventListener("DOMContentLoaded", () => {
             //Работа с FormData(input === name -> в верстке!)
             const formData = new FormData(form);
 
-            const obj = {};
-            formData.forEach((value, key) => {
-                obj[key] = value;
-            });
+            const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            fetch("server1.php", {
-                method: "POST",
-                headers: {
-                    "Content-type": "application/json",
-                },
-                body: JSON.stringify(obj),
-            })
-                .then((data) => data.text())
+            postData("http://localhost:3000/requests", json)
                 .then((data) => {
                     console.log(data); // ответ в консоле
                     showThanksModal(message.success);
@@ -298,22 +299,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
     //Создание интерактива в нашу форму
     function showThanksModal(message) {
-        //Получение модального окна, его содержимого
         const prevModalDialog = document.querySelector(".modal__dialog");
 
-        //Добавляем ему класс hide
         prevModalDialog.classList.add("hide");
-
-        //Открытие модального окна
         openModal();
-
-        //Создание div-элемента, который будет показываться после отправки данных на сервер
         const thanksModal = document.createElement("div");
 
-        //Добавляем ему класс "modal__dialog"
         thanksModal.classList.add("modal__dialog");
-
-        //Добавляем разметку на наш новый div с ответом
         thanksModal.innerHTML = `
         <div class="modal__content">
             <div class="modal__close" data-close>×</div>
@@ -321,22 +313,17 @@ window.addEventListener("DOMContentLoaded", () => {
         </div>  
         `;
 
-        //Получаем наше модальное окно и помещаем наш новый элемент ниже модального окна
         document.querySelector(".modal").append(thanksModal);
-
-        //Прописываем асинхронную операцию для обновления данных в нашей форме
         setTimeout(() => {
-            //Удаление нашего элемента
             thanksModal.remove();
-
-            //Добавление на наше модальное окно класс show
             prevModalDialog.classList.add("show");
-
-            //Удаление с нашего модального окна класс hide
             prevModalDialog.classList.remove("hide");
-
-            //Запуск функции closeModalWindow()
             closeModalWindow();
         }, 4000);
     }
+
+    //Работа с json-server
+    fetch("http://localhost:3000/menu")
+        .then((data) => data.json())
+        .then((res) => console.log(res));
 });
