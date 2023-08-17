@@ -1,4 +1,7 @@
 "use strict";
+
+// const { off } = require("process");
+
 /*Пробема которые есть на момент 13.08
     1.Не работает выход из формы через крестик
 */
@@ -339,47 +342,113 @@ window.addEventListener("DOMContentLoaded", () => {
     const arrowPrevSlider = document.querySelector(".offer__slider-prev");
     const arrowNextSlider = document.querySelector(".offer__slider-next");
     const slideImg = Array.from(document.querySelectorAll(".offer__slide"));
-    const offerSlideWrapper = document.querySelector(".offer__slider-wrapper");
     const currentSlide = document.querySelector("#current");
     const totalSlide = document.querySelector("#total");
+    const slidesWrapper = document.querySelector(".offer__slider-wrapper");
+    const slidesField = document.querySelector(".offer__slyder-inner");
+    const width = window.getComputedStyle(slidesWrapper).width;
 
-    let slideIndex = 0;
+    let slideIndex = 1;
+    let offset = 0;
 
-    sliderCounter.addEventListener("click", (e) => {
-        if (e.target.classList.contains("offer__slider-next")) {
-            if (slideIndex >= slideImg.length) {
-                slideIndex = 0;
-            }
-            nextSlide();
-        } else if (e.target.classList.contains("offer__slider-prev")) {
-            if (slideIndex < 0) {
-                slideIndex = slideImg.length - 1;
-            }
-            previousSlide();
+    if (slideImg.length < 10) {
+        showCounter(slideIndex);
+    } else {
+        totalSlide.textContent = slideImg.length;
+        currentSlide.textContent = slideIndex;
+    }
+
+    slidesField.style.width = 100 * slideImg.length + "%";
+    slidesField.style.display = "flex";
+    slidesField.style.transition = "0.5s all";
+
+    slidesWrapper.style.overflow = "hidden";
+
+    slideImg.forEach((slide) => {
+        slide.style.width = width;
+    });
+
+    arrowNextSlider.addEventListener("click", () => {
+        if (
+            offset ==
+            +width.slice(0, width.length - 2) * (slideImg.length - 1)
+        ) {
+            offset = 0;
+        } else {
+            offset += +width.slice(0, width.length - 2);
+        }
+        slidesField.style.transform = `translateX(-${offset}px)`;
+
+        if (slideIndex == slideImg.length) {
+            slideIndex = 1;
+        } else {
+            slideIndex++;
+        }
+
+        if (slideImg.length < 10) {
+            currentSlide.textContent = `${getZero(slideIndex)}`;
+        } else {
+            currentSlide.textContent = `${slideIndex}`;
         }
     });
 
-    function nextSlide() {
-        slideIndex = (slideIndex + 1) % slideImg.length;
-        showSlide(slideIndex);
-        showCounter(slideIndex);
-    }
+    arrowPrevSlider.addEventListener("click", () => {
+        if (offset == 0) {
+            offset = +width.slice(0, width.length - 2) * (slideImg.length - 1);
+        } else {
+            offset -= +width.slice(0, width.length - 2);
+        }
 
-    function previousSlide() {
-        slideIndex = (slideIndex - 1 + slideImg.length) % slideImg.length;
-        showSlide(slideIndex);
-        showCounter(slideIndex);
-    }
+        slidesField.style.transform = `translateX(-${offset}px)`;
 
-    function showSlide(index) {
-        slideImg.forEach((slide, i) => {
-            if (i === index) {
-                slide.classList.remove("hide");
-            } else {
-                slide.classList.add("hide");
-            }
-        });
-    }
+        if (slideIndex == 1) {
+            slideIndex = slideImg.length;
+        } else {
+            slideIndex--;
+        }
+
+        if (slideImg.length < 10) {
+            currentSlide.textContent = `${getZero(slideIndex)}`;
+        } else {
+            currentSlide.textContent = `${slideIndex}`;
+        }
+    });
+
+    // sliderCounter.addEventListener("click", (e) => {
+    //     if (e.target.classList.contains("offer__slider-next")) {
+    //         if (slideIndex >= slideImg.length) {
+    //             slideIndex = 0;
+    //         }
+    //         nextSlide();
+    //     } else if (e.target.classList.contains("offer__slider-prev")) {
+    //         if (slideIndex < 0) {
+    //             slideIndex = slideImg.length - 1;
+    //         }
+    //         previousSlide();
+    //     }
+    // });
+
+    // function nextSlide() {
+    //     slideIndex = (slideIndex + 1) % slideImg.length;
+    //     showSlide(slideIndex);
+    //     showCounter(slideIndex);
+    // }
+
+    // function previousSlide() {
+    //     slideIndex = (slideIndex - 1 + slideImg.length) % slideImg.length;
+    //     showSlide(slideIndex);
+    //     showCounter(slideIndex);
+    // }
+
+    // function showSlide(index) {
+    //     slideImg.forEach((slide, i) => {
+    //         if (i === index) {
+    //             slide.classList.remove("hide");
+    //         } else {
+    //             slide.classList.add("hide");
+    //         }
+    //     });
+    // }
 
     function showCounter(index) {
         currentSlide.textContent = getZero(index);
