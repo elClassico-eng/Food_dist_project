@@ -216,7 +216,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     //Функция, на получение данных из БД
+    /*
     const getResource = async (url) => {
+        
         const res = await fetch(url);
 
         if (!res.ok) {
@@ -225,21 +227,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
         return await res.json();
     };
-
-    //Получение всех данных с базы данных
-    /*
-    getResource("http://localhost:3000/menu").then((data) => {
-        data.forEach(({ img, altimg, title, descr, price }) => {
-            new MenuCard(
-                img,
-                altimg,
-                title,
-                descr,
-                price,
-                ".menu .container"
-            ).render();
-        });
-    }); */
+    */
 
     //Библиотека Axios
     axios.get("http://localhost:3000/menu").then((data) => {
@@ -341,4 +329,60 @@ window.addEventListener("DOMContentLoaded", () => {
     fetch("http://localhost:3000/menu")
         .then((data) => data.json())
         .then((res) => console.log(res));
+
+    //Slayder
+    //1.Получение всех элементов, с которыми будем работать
+    //2.Индекс, который определяет наш текущий слайд
+    //3.Фукнция показа наших слайдов и скрытие других, которые мы не видим
+
+    const sliderCounter = document.querySelector(".offer__slider-counter");
+    const arrowPrevSlider = document.querySelector(".offer__slider-prev");
+    const arrowNextSlider = document.querySelector(".offer__slider-next");
+    const slideImg = Array.from(document.querySelectorAll(".offer__slide"));
+    const offerSlideWrapper = document.querySelector(".offer__slider-wrapper");
+    const currentSlide = document.querySelector("#current");
+    const totalSlide = document.querySelector("#total");
+
+    let slideIndex = 0;
+
+    sliderCounter.addEventListener("click", (e) => {
+        if (e.target.classList.contains("offer__slider-next")) {
+            if (slideIndex >= slideImg.length) {
+                slideIndex = 0;
+            }
+            nextSlide();
+        } else if (e.target.classList.contains("offer__slider-prev")) {
+            if (slideIndex < 0) {
+                slideIndex = slideImg.length - 1;
+            }
+            previousSlide();
+        }
+    });
+
+    function nextSlide() {
+        slideIndex = (slideIndex + 1) % slideImg.length;
+        showSlide(slideIndex);
+        showCounter(slideIndex);
+    }
+
+    function previousSlide() {
+        slideIndex = (slideIndex - 1 + slideImg.length) % slideImg.length;
+        showSlide(slideIndex);
+        showCounter(slideIndex);
+    }
+
+    function showSlide(index) {
+        slideImg.forEach((slide, i) => {
+            if (i === index) {
+                slide.classList.remove("hide");
+            } else {
+                slide.classList.add("hide");
+            }
+        });
+    }
+
+    function showCounter(index) {
+        currentSlide.textContent = getZero(index);
+        totalSlide.textContent = getZero(slideImg.length);
+    }
 });
