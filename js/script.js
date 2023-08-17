@@ -339,6 +339,7 @@ window.addEventListener("DOMContentLoaded", () => {
     //3.Фукнция показа наших слайдов и скрытие других, которые мы не видим
 
     const sliderCounter = document.querySelector(".offer__slider-counter");
+    const slider = document.querySelector(".offer__slider");
     const arrowPrevSlider = document.querySelector(".offer__slider-prev");
     const arrowNextSlider = document.querySelector(".offer__slider-next");
     const slideImg = Array.from(document.querySelectorAll(".offer__slide"));
@@ -368,6 +369,26 @@ window.addEventListener("DOMContentLoaded", () => {
         slide.style.width = width;
     });
 
+    slider.style.position = "relative";
+
+    const indicators = document.createElement("ol");
+    const dots = [];
+
+    indicators.classList.add("carousel-indicators");
+    slider.append(indicators);
+
+    for (let i = 0; i < slideImg.length; i++) {
+        const dot = document.createElement("li");
+        dot.setAttribute("data-slide-to", i + 1);
+        dot.classList.add("dot");
+
+        if (i == 0) {
+            dot.style.opacity = 1;
+        }
+        indicators.append(dot);
+        dots.push(dot);
+    }
+
     arrowNextSlider.addEventListener("click", () => {
         if (
             offset ==
@@ -390,6 +411,9 @@ window.addEventListener("DOMContentLoaded", () => {
         } else {
             currentSlide.textContent = `${slideIndex}`;
         }
+
+        dots.forEach((dot) => (dot.style.opacity = ".5"));
+        dots[slideIndex - 1].style.opacity = 1;
     });
 
     arrowPrevSlider.addEventListener("click", () => {
@@ -412,43 +436,29 @@ window.addEventListener("DOMContentLoaded", () => {
         } else {
             currentSlide.textContent = `${slideIndex}`;
         }
+        dots.forEach((dot) => (dot.style.opacity = ".5"));
+        dots[slideIndex - 1].style.opacity = 1;
     });
 
-    // sliderCounter.addEventListener("click", (e) => {
-    //     if (e.target.classList.contains("offer__slider-next")) {
-    //         if (slideIndex >= slideImg.length) {
-    //             slideIndex = 0;
-    //         }
-    //         nextSlide();
-    //     } else if (e.target.classList.contains("offer__slider-prev")) {
-    //         if (slideIndex < 0) {
-    //             slideIndex = slideImg.length - 1;
-    //         }
-    //         previousSlide();
-    //     }
-    // });
+    dots.forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+            const slideTo = e.target.getAttribute("data-slide-to");
 
-    // function nextSlide() {
-    //     slideIndex = (slideIndex + 1) % slideImg.length;
-    //     showSlide(slideIndex);
-    //     showCounter(slideIndex);
-    // }
+            slideIndex.slideTo;
+            offset = +width.slice(0, width.length - 2) * (slideTo - 1);
 
-    // function previousSlide() {
-    //     slideIndex = (slideIndex - 1 + slideImg.length) % slideImg.length;
-    //     showSlide(slideIndex);
-    //     showCounter(slideIndex);
-    // }
+            slidesField.style.transform = `translateX(-${offset}px)`;
 
-    // function showSlide(index) {
-    //     slideImg.forEach((slide, i) => {
-    //         if (i === index) {
-    //             slide.classList.remove("hide");
-    //         } else {
-    //             slide.classList.add("hide");
-    //         }
-    //     });
-    // }
+            if (slideImg.length < 10) {
+                currentSlide.textContent = `${getZero(slideIndex)}`;
+            } else {
+                currentSlide.textContent = `${slideIndex}`;
+            }
+
+            dots.forEach((dot) => (dot.style.opacity = ".5"));
+            dots[slideIndex - 1].style.opacity = 1;
+        });
+    });
 
     function showCounter(index) {
         currentSlide.textContent = getZero(index);
