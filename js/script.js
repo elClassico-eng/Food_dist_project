@@ -2,8 +2,9 @@
 
 // const { off } = require("process");
 
-/*Пробема которые есть на момент 13.08
+/*Пробема которые есть на момент 19.08
     1.Не работает выход из формы через крестик
+    2.Создать технические функции, для работы со слайдером
 */
 
 //Глобальный обработчик событий
@@ -352,6 +353,15 @@ window.addEventListener("DOMContentLoaded", () => {
     let slideIndex = 1;
     let offset = 0;
 
+    function replaceStr(str) {
+        return +str.replace(/\D/g, "");
+    }
+
+    function showCounter(index) {
+        currentSlide.textContent = getZero(index);
+        totalSlide.textContent = getZero(slideImg.length);
+    }
+
     if (slideImg.length < 10) {
         showCounter(slideIndex);
     } else {
@@ -390,13 +400,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     arrowNextSlider.addEventListener("click", () => {
-        if (
-            offset ==
-            +width.slice(0, width.length - 2) * (slideImg.length - 1)
-        ) {
+        if (offset == replaceStr(width) * (slideImg.length - 1)) {
             offset = 0;
         } else {
-            offset += +width.slice(0, width.length - 2);
+            offset += replaceStr(width);
         }
         slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -418,9 +425,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     arrowPrevSlider.addEventListener("click", () => {
         if (offset == 0) {
-            offset = +width.slice(0, width.length - 2) * (slideImg.length - 1);
+            offset = replaceStr(width) * (slideImg.length - 1);
         } else {
-            offset -= +width.slice(0, width.length - 2);
+            offset -= replaceStr(width);
         }
 
         slidesField.style.transform = `translateX(-${offset}px)`;
@@ -445,7 +452,7 @@ window.addEventListener("DOMContentLoaded", () => {
             const slideTo = e.target.getAttribute("data-slide-to");
 
             slideIndex.slideTo;
-            offset = +width.slice(0, width.length - 2) * (slideTo - 1);
+            offset = replaceStr(width) * (slideTo - 1);
 
             slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -460,8 +467,73 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    function showCounter(index) {
-        currentSlide.textContent = getZero(index);
-        totalSlide.textContent = getZero(slideImg.length);
+    //Calc
+    const result = document.querySelector(".calculating__result span");
+    //prettier-ignore
+    let sex = "female",
+        height,weight,age,
+        ratio = 1.375;
+
+    function calcTotal() {
+        if (!sex || !height || !weight || !age || !ratio) {
+            result.textContent = "?";
+            return;
+        }
+
+        if (sex === "female") {
+            //prettier-ignore
+            result.textContent = Math.round((447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)) * ratio)
+        } else {
+            //prettier-ignore
+            result.textContent = Math.round((88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)) * ratio);
+        }
     }
+
+    calcTotal();
+
+    function getStatickInfo(parentSelector, activeClass) {
+        const element = document.querySelectorAll(`${parentSelector} div`);
+
+        element.forEach((elem) => {
+            elem.addEventListener("click", (e) => {
+                if (e.target.getAttribute("data-ratio")) {
+                    ratio = +e.target.getAttribute("data-ratio");
+                } else {
+                    sex = e.target.getAttribute("id");
+                }
+
+                element.forEach((elem) => {
+                    elem.classList.remove(activeClass);
+                });
+                e.target.classList.add(activeClass);
+                calcTotal();
+            });
+        });
+    }
+    getStatickInfo("#gender", "calculating__choose-item_active");
+    //prettier-ignore
+    getStatickInfo(".calculating__choose_big","calculating__choose-item_active");
+
+    function getDynamicInfo(selector) {
+        const input = document.querySelector(selector);
+
+        input.addEventListener("input", () => {
+            switch (input.getAttribute("id")) {
+                case "height":
+                    height = +input.value;
+                    break;
+                case "weight":
+                    weight = +input.value;
+                    break;
+                case "age":
+                    age = +input.value;
+                    break;
+            }
+            calcTotal();
+        });
+    }
+
+    getDynamicInfo("#weight");
+    getDynamicInfo("#height");
+    getDynamicInfo("#age");
 });
