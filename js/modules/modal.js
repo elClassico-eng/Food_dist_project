@@ -42,6 +42,7 @@ function modal(triggerSelector, modalSelector, modalTimerId) {
         }
     });
 
+    //Разобрать данный код!
     function showModalByScroll() {
         if (
             window.pageYOffset + document.documentElement.clientHeight >=

@@ -26,10 +26,11 @@ function forms(formSelector, modalTimerId) {
                 display: block;
                 margin: 0 auto;
             `;
+            //Повторить!!!
             form.insertAdjacentElement("afterend", statusMessage);
-
+            //Повторить!!!
             const formData = new FormData(form);
-
+            //Повторить!!!
             const json = JSON.stringify(Object.fromEntries(formData.entries()));
             postData("http://localhost:3000/requests", json)
                 .then((data) => {
